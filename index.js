@@ -1,6 +1,6 @@
 const express = require("express");
-
 const app = express();
+const jwt = require("jsonwebtoken");
 app.use(express.json());
 
 const users = [
@@ -24,7 +24,16 @@ app.post("/api/login", (req, res) => {
     return u.username === username && u.password === password;
   });
   if (user) {
-    res.json(user);
+    //Generar Token de Acceso
+    const accessToken = jwt.sign(
+      { id: user.id, isAdmin: user.isAdmin },
+      "mySecreteKey"
+    );
+    res.json({
+      username: user.username,
+      isAdmin: user.isAdmin,
+      accessToken,
+    });
   } else {
     res.status(400).json("Username or password incorrect!");
   }

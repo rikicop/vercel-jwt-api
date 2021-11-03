@@ -1,19 +1,26 @@
 const express = require("express");
 
 const app = express();
+app.use(express.json());
 
-app.get("/", (req, res) => res.send("Home Page Route"));
+const users = [
+  {
+    id: "1",
+    unsername: "jhon",
+    password: "jhon123",
+    isAdmin: true,
+  },
+  {
+    id: "2",
+    unsername: "jame",
+    password: "jhon123",
+    isAdmin: false,
+  },
+];
 
-app.get("/about", (req, res) => res.send("Acerca de que!!"));
+app.post("/api/login", (req, res) => {
+  /* const { username, password } = req.body; */
+  res.json("Hey Funciona!!");
+});
 
-app.get("/portfolio", (req, res) =>
-  res.send("De que portafolio estás hablando!!")
-);
-
-app.get("/contact", (req, res) => res.send("Esta es la página de contacto"));
-
-const port = process.env.PORT || 5000;
-
-app.listen(port, () =>
-  console.log(`Server running on ${port}, http://localhost:${port}`)
-);
+app.listen(5000, () => console.log("El servidor está corriendo"));

@@ -1,19 +1,20 @@
 const express = require("express");
 const app = express();
 const jwt = require("jsonwebtoken");
+
 app.use(express.json());
 
 const users = [
   {
     id: "1",
     username: "jhon",
-    password: "jhon123",
+    password: "Jhon0908",
     isAdmin: true,
   },
   {
     id: "2",
-    username: "jame",
-    password: "jhon123",
+    username: "jane",
+    password: "Jane0908",
     isAdmin: false,
   },
 ];
@@ -24,18 +25,43 @@ app.post("/api/login", (req, res) => {
     return u.username === username && u.password === password;
   });
   if (user) {
-    //Generar Token de Acceso
+    //Gerar Token de Acceso
     const accessToken = jwt.sign(
       { id: user.id, isAdmin: user.isAdmin },
-      "mySecreteKey"
+      "mySecretKey"
     );
     res.json({
       username: user.username,
       isAdmin: user.isAdmin,
       accessToken,
     });
+    res.json(user);
   } else {
     res.status(400).json("Username or password incorrect!");
+  }
+});
+
+const verify = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader) {
+    const token = authHeader.split(" ")[1];
+
+    jwt.verify(token, "mySecretKey", (err, user) => {
+      if (err) {
+        return res.status(403).json("Token is not valid!");
+      }
+      req.user = user;
+      next();
+    });
+  } else {
+    res.status(401).json("You are not authenticated!");
+  }
+};
+app.delete("/api/users/:userId", verify, (req, res) => {
+  if (req.user.id === req.params.userId || req.user.isAdmin) {
+    res.status(200).json("User has been deleted!");
+  } else {
+    res.status(403).json("User is not allowed to delete users!");
   }
 });
 

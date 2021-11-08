@@ -1,9 +1,15 @@
 const express = require("express");
 const app = express();
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
+
+require("dotenv").config();
 app.use(express.json());
 
-const users = [
+const routes = require("./routes/usuarioRoutes");
+app.use("/", routes);
+
+/* const users = [
   {
     id: "1",
     username: "john",
@@ -16,7 +22,7 @@ const users = [
     password: "Jane0908",
     isAdmin: false,
   },
-];
+]; */
 
 let refreshTokens = [];
 
@@ -49,7 +55,7 @@ app.post("/api/refresh", (req, res) => {
 
 const generateAccessToken = (user) => {
   return jwt.sign({ id: user.id, isAdmin: user.isAdmin }, "mySecretKey", {
-    expiresIn: "15m",
+    expiresIn: "5s",
   });
 };
 

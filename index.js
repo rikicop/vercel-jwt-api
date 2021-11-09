@@ -1,7 +1,10 @@
 const express = require("express");
 const app = express();
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
+
+const Usuario = require("./models/Usuario");
 
 require("dotenv").config();
 app.use(express.json());
@@ -63,19 +66,27 @@ const generateRefreshToken = (user) => {
   return jwt.sign({ id: user.id, isAdmin: user.isAdmin }, "myRefreshSecretKey");
 };
 
-app.post("/api/login", (req, res) => {
+//Abajo puse que es async por que ahora si trabajo con mongodb
+app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
-  const user = users.find((u) => {
+  /* const user = users.find((u) => {
     return u.username === username && u.password === password;
-  });
+  }); */
+  const user = await Usuario.findOne({ username: req.body.username }); // NEW
+  if (!user) return res.status(400).json({ error: "Usuario no encontrado" }); //NEW
+
+  //const validPassword = await bcrypt.compare(req.body.password, user.password); //NEW
+  //if (!validPassword)
+  //  return res.status(400).json({ error: "contraseña no válida" }); //NEW
+
   if (user) {
     //Generate an access token
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
     refreshTokens.push(refreshToken);
     res.json({
-      username: user.username,
-      isAdmin: user.isAdmin,
+      username: user.username, //NEW
+      isAdmin: user.password, //NEW
       accessToken,
       refreshToken,
     });

@@ -12,21 +12,6 @@ app.use(express.json());
 const routes = require("./routes/usuarioRoutes");
 app.use("/", routes);
 
-/* const users = [
-  {
-    id: "1",
-    username: "john",
-    password: "John0908",
-    isAdmin: true,
-  },
-  {
-    id: "2",
-    username: "jane",
-    password: "Jane0908",
-    isAdmin: false,
-  },
-]; */
-
 let refreshTokens = [];
 
 app.post("/api/refresh", (req, res) => {
@@ -66,18 +51,17 @@ const generateRefreshToken = (user) => {
   return jwt.sign({ id: user.id, isAdmin: user.isAdmin }, "myRefreshSecretKey");
 };
 
+/* POST LOGIN */
 //Abajo puse que es async por que ahora si trabajo con mongodb
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
-  /* const user = users.find((u) => {
-    return u.username === username && u.password === password;
-  }); */
-  const user = await Usuario.findOne({ username: req.body.username }); // NEW
-  if (!user) return res.status(400).json({ error: "Usuario no encontrado" }); //NEW
 
-  //const validPassword = await bcrypt.compare(req.body.password, user.password); //NEW
+  const user = await Usuario.findOne({ username: req.body.username });
+  if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
+
+  //const validPassword = await bcrypt.compare(req.body.password, user.password);
   //if (!validPassword)
-  //  return res.status(400).json({ error: "contraseña no válida" }); //NEW
+  //  return res.status(400).json({ error: "contraseña no válida" });
 
   if (user) {
     //Generate an access token
@@ -85,13 +69,49 @@ app.post("/api/login", async (req, res) => {
     const refreshToken = generateRefreshToken(user);
     refreshTokens.push(refreshToken);
     res.json({
-      username: user.username, //NEW
-      isAdmin: user.password, //NEW
+      username: user.username,
+      isAdmin: user.password,
       accessToken,
       refreshToken,
     });
   } else {
     res.status(400).json("Username or password incorrect!");
+  }
+});
+
+/* POST REGISTER */
+app.post("/api/register", async (req, res) => {
+  //const { error } = schemaRegister.validate(req.body); // Tovia no es necesario?
+
+  /* if (error) {
+    return res.status(400).json({ error: error.details[0].message }); 
+  } */ // Tovia no es necesario?
+
+  const existUser = await Usuario.findOne({ username: req.body.username });
+  if (existUser)
+    return res
+      .status(400)
+      .json({ error: true, mensaje: "usuario ya registrado" });
+
+  // hash contraseña
+  const salt = await bcrypt.genSalt(10);
+  const password = await bcrypt.hash(req.body.password, salt);
+
+  // El password abajo lo puse solo por que tiene el mismo nombre
+  const user = new Usuario({
+    id: req.body.id,
+    username: req.body.username,
+    password: password,
+    isAdmin: req.body.isAdmin,
+  });
+  try {
+    const savedUser = await user.save();
+    res.json({
+      error: null,
+      data: savedUser,
+    });
+  } catch (error) {
+    res.status(400).json({ error });
   }
 });
 

@@ -59,9 +59,9 @@ app.post("/api/login", async (req, res) => {
   const user = await Usuario.findOne({ username: req.body.username });
   if (!user) return res.status(400).json({ error: "Usuario no encontrado" });
 
-  //const validPassword = await bcrypt.compare(req.body.password, user.password);
-  //if (!validPassword)
-  //  return res.status(400).json({ error: "contraseña no válida" });
+  const validPassword = await bcrypt.compare(req.body.password, user.password);
+  if (!validPassword)
+    return res.status(400).json({ error: "contraseña no válida" });
 
   if (user) {
     //Generate an access token
@@ -70,7 +70,8 @@ app.post("/api/login", async (req, res) => {
     refreshTokens.push(refreshToken);
     res.json({
       username: user.username,
-      isAdmin: user.password,
+      password: user.password,
+      isAdmin: user.isAdmin,
       accessToken,
       refreshToken,
     });

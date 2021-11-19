@@ -134,8 +134,13 @@ const verify = (req, res, next) => {
   }
 };
 
-app.delete("/api/users/:userId", verify, (req, res) => {
+
+
+app.delete("/api/users/:userId", verify, async (req, res) => {
+  let paramID = req.params.userId; //NEW
+  const deleteUsuario = await Usuario.deleteOne({ id: paramID }); //NEW
   if (req.user.id === req.params.userId || req.user.isAdmin) {
+    if (!deleteUsuario) return res.json(deleteMovie);
     res.status(200).json("User has been deleted.");
   } else {
     res.status(403).json("You are not allowed to delete this user!");

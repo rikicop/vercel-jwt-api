@@ -1,5 +1,6 @@
 const express = require("express");
 const app = express();
+const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
@@ -7,6 +8,8 @@ const mongoose = require("mongoose");
 const Usuario = require("./models/Usuario");
 
 require("dotenv").config();
+app.use(cors());
+
 app.use(express.json());
 
 const routes = require("./routes/usuarioRoutes");
@@ -82,7 +85,7 @@ app.post("/api/login", async (req, res) => {
 
 /* POST REGISTER */
 app.post("/api/register", async (req, res) => {
-  //const { error } = schemaRegister.validate(req.body); // Tovia no es necesario?
+  //const { error } = schemaRegister.validate(req.body); // BLUUWEB
 
   /* if (error) {
     return res.status(400).json({ error: error.details[0].message }); 
@@ -133,8 +136,6 @@ const verify = (req, res, next) => {
     res.status(401).json("You are not authenticated!");
   }
 };
-
-
 
 app.delete("/api/users/:userId", verify, async (req, res) => {
   let paramID = req.params.userId; //NEW

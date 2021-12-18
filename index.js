@@ -46,7 +46,7 @@ app.post("/api/refresh", (req, res) => {
 
 const generateAccessToken = (user) => {
   return jwt.sign({ id: user.id, isAdmin: user.isAdmin }, "mySecretKey", {
-    expiresIn: "5s",
+    expiresIn: "1d",
   });
 };
 
@@ -139,9 +139,9 @@ const verify = (req, res, next) => {
 
 app.delete("/api/users/:userId", verify, async (req, res) => {
   let paramID = req.params.userId; //NEW
-  const deleteUsuario = await Usuario.deleteOne({ id: paramID }); //NEW
+
   if (req.user.id === req.params.userId || req.user.isAdmin) {
-    if (!deleteUsuario) return res.json(deleteMovie);
+    const deleteUsuario = await Usuario.deleteOne({ id: paramID });
     res.status(200).json("User has been deleted.");
   } else {
     res.status(403).json("You are not allowed to delete this user!");
